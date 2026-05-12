@@ -1,16 +1,58 @@
-# React + Vite
+# Student Performance Predictor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An AI-powered educational analytics platform built with React, Django, and LangGraph.
 
-Currently, two official plugins are available:
+## Architecture
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This is a full-stack mono-repo containing:
+- **`frontend/`**: React 19 + Vite + Tailwind CSS + Recharts
+- **`backend/`**: Django + Django REST Framework + Celery + PostgreSQL + Redis + LangGraph
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Docker and Docker Compose
+- Node.js >= 18 (if running frontend locally outside Docker)
+- Python >= 3.11 (if running backend locally outside Docker)
 
-## Expanding the ESLint configuration
+## Getting Started (Docker Compose)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The easiest way to run the entire stack is using Docker Compose.
+
+1. **Clone the repository**
+2. **Environment Setup**
+   - Copy `frontend/.env.example` to `frontend/.env`
+   - Copy `backend/.env.example` to `backend/.env`
+   - Fill in your OpenAI API Key and secret configurations.
+3. **Start the containers**
+   ```bash
+   docker-compose up --build
+   ```
+4. **Access the Application**
+   - Frontend: `http://localhost:5173`
+   - Backend API: `http://localhost:8000/api`
+
+## Running Locally (Without Docker)
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+## AI Agent System
+
+The backend utilizes a sophisticated multi-agent LangGraph system to:
+- Discover hidden correlations in performance data
+- Predict future exam scores using ML regression
+- Provide personalized study recommendations using FAISS RAG
