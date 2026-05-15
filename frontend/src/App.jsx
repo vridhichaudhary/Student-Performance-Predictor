@@ -3,28 +3,35 @@ import FileUpload from './components/FileUpload';
 import Dashboard from './components/Dashboard';
 import ChatBot from './components/ChatBot';
 import { generateMockAnalysis } from './utils/mockDataGenerator';
-import { parseCSV } from './utils/csvParser';
+import { uploadCSV, getDashboardData } from './services/api';
 import { Sparkles, BrainCircuit, BarChart3, ShieldCheck } from 'lucide-react';
 
 function App() {
   const [analysisData, setAnalysisData] = useState(null);
   const [isDemo, setIsDemo] = useState(false);
+  const [studentId, setStudentId] = useState(null);
 
   const handleFileUpload = async (file) => {
     try {
-      const csvData = await parseCSV(file);
-      const studentName = csvData[0]?.["Student Name"] || "Student";
-      const mockData = generateMockAnalysis(studentName);
-      setAnalysisData(mockData);
+      // 1. Upload CSV
+      const uploadResponse = await uploadCSV(file);
+      const sid = uploadResponse.student_id;
+      setStudentId(sid);
+      
+      // 2. Fetch Dashboard Data
+      const dashboardData = await getDashboardData(sid);
+      setAnalysisData(dashboardData);
+      
     } catch (error) {
-      console.error("Error parsing CSV:", error);
-      alert("Failed to parse CSV. Please use the template provided.");
+      console.error("Error processing CSV or fetching data:", error);
+      alert("Failed to process data. Make sure backend is running and DB is migrated.");
     }
   };
 
   const handleDemo = () => {
     setAnalysisData(generateMockAnalysis("Demo Student"));
     setIsDemo(true);
+    setStudentId(null);
   };
 
   return (
@@ -99,7 +106,7 @@ function App() {
       ) : (
         <>
           <Dashboard data={analysisData} onReset={() => setAnalysisData(null)} />
-          <ChatBot />
+          <ChatBot studentId={studentId} isDemo={isDemo} />
         </>
       )}
 

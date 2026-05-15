@@ -1,0 +1,7 @@
+{
+  "name": "student-performance-predictor-root",
+  "private": true,
+  "scripts": {
+    "vercel-build": "cd frontend && npm install && npm run build && cd .. && rm -rf dist && cp -R frontend/dist dist"
+  }
+}

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, Bot, User, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { sendChatMessage } from '../services/api';
 
-const ChatBot = () => {
+const ChatBot = ({ studentId, isDemo }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [input, setInput] = useState('');
@@ -26,7 +27,7 @@ const ChatBot = () => {
     "default": "That's an interesting question. Looking at your performance patterns, I can say that consistency is key. Would you like a specific study schedule?"
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
 
     const userMessage = { role: 'user', content: input, timestamp: new Date() };
@@ -34,19 +35,31 @@ const ChatBot = () => {
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI thinking
-    setTimeout(() => {
-      const lowerInput = input.toLowerCase();
-      let response = mockResponses.default;
-      
-      if (lowerInput.includes('math')) response = mockResponses.math;
-      else if (lowerInput.includes('focus') || lowerInput.includes('study')) response = mockResponses.focus;
-      else if (lowerInput.includes('predict') || lowerInput.includes('score')) response = mockResponses.predict;
-      else if (lowerInput.includes('improve')) response = mockResponses.improve;
+    if (isDemo || !studentId) {
+      // Simulate AI thinking for demo
+      setTimeout(() => {
+        const lowerInput = userMessage.content.toLowerCase();
+        let response = mockResponses.default;
+        
+        if (lowerInput.includes('math')) response = mockResponses.math;
+        else if (lowerInput.includes('focus') || lowerInput.includes('study')) response = mockResponses.focus;
+        else if (lowerInput.includes('predict') || lowerInput.includes('score')) response = mockResponses.predict;
+        else if (lowerInput.includes('improve')) response = mockResponses.improve;
 
-      setMessages(prev => [...prev, { role: 'assistant', content: response, timestamp: new Date() }]);
-      setIsTyping(false);
-    }, 1500);
+        setMessages(prev => [...prev, { role: 'assistant', content: response, timestamp: new Date() }]);
+        setIsTyping(false);
+      }, 1500);
+    } else {
+      try {
+        const response = await sendChatMessage(studentId, userMessage.content);
+        setMessages(prev => [...prev, { role: 'assistant', content: response.message, timestamp: new Date() }]);
+      } catch (error) {
+        console.error("Chat API error:", error);
+        setMessages(prev => [...prev, { role: 'assistant', content: "I'm having trouble connecting to my servers right now.", timestamp: new Date() }]);
+      } finally {
+        setIsTyping(false);
+      }
+    }
   };
 
   return (
